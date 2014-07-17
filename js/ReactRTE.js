@@ -23,7 +23,7 @@ var EventMap = require('./keys/EventMap');
 
 var STATE = {
 	activePartial: {}
-}
+};
 
 var SetState = {
 
@@ -40,13 +40,12 @@ var SetState = {
 	setTextFocus: function(obj) {
 		STATE.activePartial = obj;
 	},
-
 	handleKeyDown: function(e) {
-		handleKEyEvent(e);
+		handleKeyEvent(e);
 	},
 
 	handleKeyPress: function(e) {
-		handleKeyEvent(e);
+		handleKeyEvent(e, STATE.activePartial);
 	},
 
 	handleKeyUp: function(e) {
@@ -55,19 +54,24 @@ var SetState = {
 }
 
 
-function handleKeyEvent(e) {
+function handleKeyEvent(e, activePartial) {
 	var triggered = false,
-			typeEvent = EventMap[e.type];
+		typeEvent = EventMap[e.type];
+		if (!typeEvent) {
+			return;
+		}
 
-		typeEvent.events.each(function(event) {
-			if (e.which == event.key) {
-				event.process(e);
+
+
+		typeEvent.events.forEach(function(event) {
+			if (e.key == event.key) {
+				event.process(e, activePartial);
 				triggered = true;
 			}
 		});
 		
 		if (!triggered) {
-			typeEvent && typeEvent.defaultEvent && typeEvent.defaultEvent(e);
+			typeEvent && typeEvent.defaultEvent && typeEvent.defaultEvent.process(e, activePartial);
 		}
 }
 
@@ -98,42 +102,42 @@ var ReactRTE = React.createClass({displayName: 'ReactRTE',
 				left: 0,
 				top: 0
 			},
+			activeLine: 0,
 			selection: [],
 			lines: [
 				[{
-					styles:{
-						'bold': true
-					},
-					text: 'hey this is bold'
-				},{
-					styles: {
-						'underline': true,
-						'strikethrough': true
-					},
-					text: 'Test'
-				},{
-					styles: {
-						'color': '#987766',
-						'background-color': '#DDD'
-					},
-					text: 'Test'
+					text: ''
 				}]
 			]
 		}
 	},
 	handleKeyDown: function(e) {
-
+		//This should dispatch an event instead but same concept
 		// State.handleKeyDown(e);
-	
 	},
 	handleKeyPress: function(e) {
-debugger;
+		debugger;
+		if (this.refs.lines.getDOMNode().children[this.state.activeLine].children[0].offsetWidth >= this.getRTEWidth()) {
+			this.state.lines.push([
+			{
+				text: ''
+			}]);
+			this.state.activeLine += 1;
+			State.setTextFocus(this.state.lines[this.state.activeLine][0]);
 
+		}
+
+		State.handleKeyPress(e);
+		//CHECK WIDTH OF ACTIVE LINE(S)?
+		//Add new line and set the focus 
+
+		this.setState({lines: this.state.lines, activeLine: this.state.activeLine});
 	},
 	handleKeyUp: function(e) {
 		e.preventDefault();
 	},
 	handleMouseDown: function(e) {
+
 	},
 	handleCut: function(e) {
 
@@ -145,16 +149,19 @@ debugger;
 
 	},
 	componentDidMount: function() {
-
+		State.setTextFocus(this.state.lines[0][0]);
 	},
 	componentWillMount: function() {
 		
 	},
+	getRTEWidth: function() {
+		return this.refs.rteBody.getDOMNode().offsetWidth;
+	},
 	render: function() {
 		return (
-			React.DOM.div( {ref:"rteBody", className:"react-rte", tabIndex:"0", onMouseDown:this.handleMouseDown, onKeyDown:this.handleKeyDown, onKeyPress:this.handleKeyPress, onKeyUp:this.handleKeyUp, onCut:this.handleCut, onPaste:this.handlePaste, onCopy:this.handleCopy}, 
+			React.DOM.div( {ref:"rteBody", className:"react-rte", tabIndex:"0", style:{minHeight: 20}, onMouseDown:this.handleMouseDown, onKeyDown:this.handleKeyDown, onKeyPress:this.handleKeyPress, onKeyUp:this.handleKeyUp, onCut:this.handleCut, onPaste:this.handlePaste, onCopy:this.handleCopy}, 
 				Cursor( {position:this.state.cursorPosition} ),
-				Lines( {lines:this.state.lines} )
+				Lines( {lines:this.state.lines, ref:"lines"} )
 			)
 		);
 
@@ -176,30 +183,35 @@ module.exports = ReactRTE;
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./Cursor":1,"./State":2,"./lines/Lines":11,"react":157}],4:[function(require,module,exports){
 var Backspace = {
-
-	key: 8,
-	event: 'keydown',
+	key: 'Backspace',
+	event: 'keypress',
 	process: function() {
 		
 	}
 }
+
+module.exports = Backspace;
 },{}],5:[function(require,module,exports){
-var Enter = {
+var Default = {
 	event: 'keypress',
 	isDefault: true,
-	process: function() {
-		
+	process: function(e, activePartial) {
+		var ch = String.fromCharCode(e.which);
+		activePartial.text += ch;
 	}
 }
+
+module.exports = Default;
 },{}],6:[function(require,module,exports){
 var Enter = {
-
-	key: 13,
-	event: 'keydown',
+	key: 'Enter',
+	event: 'keypress',
 	process: function() {
 
 	}
 }
+
+module.exports = Enter;
 },{}],7:[function(require,module,exports){
 var Enter = require('./Enter'),
 	Space = require('./Space'),
@@ -233,14 +245,15 @@ EventArrayMap.forEach(function(event) {
 
 module.exports = EventMap;
 },{"./Backspace":4,"./Default":5,"./Enter":6,"./Space":8}],8:[function(require,module,exports){
-var Enter = {
-
-	key: 32,
-	event: 'keydown',
+var Space = {
+	key: ' ',
+	event: 'keypress',
 	process: function() {
 		
 	}
 }
+
+module.exports = Space;
 },{}],9:[function(require,module,exports){
 /** @jsx React.DOM */
 
@@ -286,9 +299,6 @@ var LinePartial = React.createClass({displayName: 'LinePartial',
 	componentDidUpdate: function(prevProps, prevState) {
 		
 	},
-	shouldComponentUpdate: function(nextProps, nextState) {
-		
-	},
 	render: function() {
 		return (
 			React.DOM.span( {style:this.props.style, onMouseDown:this.props.handleMouseDown}, 
@@ -316,8 +326,8 @@ var Lines = React.createClass({displayName: 'Lines',
 		return { lines: this.props.lines};
 	},
 	render: function() {
-		var lines = this.state.lines.map(function(line) {
-			return Line( {data:line} );
+		var lines = this.state.lines.map(function(line, index) {
+			return Line( {data:line, ref:index});
 		});
 
 		return (

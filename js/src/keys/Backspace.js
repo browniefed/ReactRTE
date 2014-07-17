@@ -1,8 +1,9 @@
 var Backspace = {
-
 	key: 'Backspace',
-	event: 'keydown',
+	event: 'keypress',
 	process: function() {
 		
 	}
 }
+
+module.exports = Backspace;

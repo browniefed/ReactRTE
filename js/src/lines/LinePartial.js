@@ -11,9 +11,6 @@ var LinePartial = React.createClass({
 	componentDidUpdate: function(prevProps, prevState) {
 		
 	},
-	shouldComponentUpdate: function(nextProps, nextState) {
-		
-	},
 	render: function() {
 		return (
 			<span style={this.props.style} onMouseDown={this.props.handleMouseDown}>

@@ -1,8 +1,9 @@
-var Enter = {
-
+var Space = {
 	key: ' ',
-	event: 'keydown',
+	event: 'keypress',
 	process: function() {
 		
 	}
 }
+
+module.exports = Space;

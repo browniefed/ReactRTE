@@ -2,7 +2,7 @@ var EventMap = require('./keys/EventMap');
 
 var STATE = {
 	activePartial: {}
-}
+};
 
 var SetState = {
 
@@ -19,13 +19,12 @@ var SetState = {
 	setTextFocus: function(obj) {
 		STATE.activePartial = obj;
 	},
-
 	handleKeyDown: function(e) {
-		handleKEyEvent(e);
+		handleKeyEvent(e);
 	},
 
 	handleKeyPress: function(e) {
-		handleKeyEvent(e);
+		handleKeyEvent(e, STATE.activePartial);
 	},
 
 	handleKeyUp: function(e) {
@@ -34,19 +33,24 @@ var SetState = {
 }
 
 
-function handleKeyEvent(e) {
+function handleKeyEvent(e, activePartial) {
 	var triggered = false,
-			typeEvent = EventMap[e.type];
+		typeEvent = EventMap[e.type];
+		if (!typeEvent) {
+			return;
+		}
 
-		typeEvent.events.each(function(event) {
+
+
+		typeEvent.events.forEach(function(event) {
 			if (e.key == event.key) {
-				event.process(e);
+				event.process(e, activePartial);
 				triggered = true;
 			}
 		});
 		
 		if (!triggered) {
-			typeEvent && typeEvent.defaultEvent && typeEvent.defaultEvent(e);
+			typeEvent && typeEvent.defaultEvent && typeEvent.defaultEvent.process(e, activePartial);
 		}
 }
 

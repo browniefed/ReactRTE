@@ -21,41 +21,41 @@ var ReactRTE = React.createClass({
 				left: 0,
 				top: 0
 			},
+			activeLine: 0,
 			selection: [],
 			lines: [
 				[{
-					styles:{
-						'bold': true
-					},
-					text: 'hey this is bold'
-				},{
-					styles: {
-						'underline': true,
-						'strikethrough': true
-					},
-					text: 'Test'
-				},{
-					styles: {
-						'color': '#987766',
-						'background-color': '#DDD'
-					},
-					text: 'Test'
+					text: ''
 				}]
 			]
 		}
 	},
 	handleKeyDown: function(e) {
-
-		State.handleKeyDown(e);
-	
+		//This should dispatch an event instead but same concept
+		// State.handleKeyDown(e);
 	},
 	handleKeyPress: function(e) {
+		if (this.refs.lines.getDOMNode().children[this.state.activeLine].children[0].offsetWidth >= this.getRTEWidth()) {
+			this.state.lines.push([
+			{
+				text: ''
+			}]);
+			this.state.activeLine += 1;
+			State.setTextFocus(this.state.lines[this.state.activeLine][0]);
 
+		}
+
+		State.handleKeyPress(e);
+		//CHECK WIDTH OF ACTIVE LINE(S)?
+		//Add new line and set the focus 
+
+		this.setState({lines: this.state.lines, activeLine: this.state.activeLine});
 	},
 	handleKeyUp: function(e) {
 		e.preventDefault();
 	},
 	handleMouseDown: function(e) {
+
 	},
 	handleCut: function(e) {
 
@@ -67,16 +67,19 @@ var ReactRTE = React.createClass({
 
 	},
 	componentDidMount: function() {
-
+		State.setTextFocus(this.state.lines[0][0]);
 	},
 	componentWillMount: function() {
 		
 	},
+	getRTEWidth: function() {
+		return this.refs.rteBody.getDOMNode().offsetWidth;
+	},
 	render: function() {
 		return (
-			<div ref="rteBody" className="react-rte" tabIndex="0" onMouseDown={this.handleMouseDown} onKeyDown={this.handleKeyDown} onKeyPress={this.handleKeyPress} onKeyUp={this.handleKeyUp} onCut={this.handleCut} onPaste={this.handlePaste} onCopy={this.handleCopy}>
+			<div ref="rteBody" className="react-rte" tabIndex="0" style={{minHeight: 20}} onMouseDown={this.handleMouseDown} onKeyDown={this.handleKeyDown} onKeyPress={this.handleKeyPress} onKeyUp={this.handleKeyUp} onCut={this.handleCut} onPaste={this.handlePaste} onCopy={this.handleCopy}>
 				<Cursor position={this.state.cursorPosition} />
-				<Lines lines={this.state.lines} />
+				<Lines lines={this.state.lines} ref="lines" />
 			</div>
 		);
 

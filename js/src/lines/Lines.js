@@ -13,8 +13,8 @@ var Lines = React.createClass({
 		return { lines: this.props.lines};
 	},
 	render: function() {
-		var lines = this.state.lines.map(function(line) {
-			return <Line data={line} />;
+		var lines = this.state.lines.map(function(line, index) {
+			return <Line data={line} ref={index}/>;
 		});
 
 		return (

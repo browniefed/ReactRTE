@@ -1,8 +1,9 @@
 var Enter = {
-
 	key: 'Enter',
-	event: 'keydown',
+	event: 'keypress',
 	process: function() {
 
 	}
 }
+
+module.exports = Enter;
