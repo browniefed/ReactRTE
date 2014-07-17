@@ -1,0 +1,11 @@
+/* line 1, ../sass/sass/_cursor.scss */
+.react-rte .cursor {
+  display: none;
+  width: 1px;
+  height: 10px;
+  background-color: #000;
+}
+/* line 7, ../sass/sass/rte.scss */
+.react-rte:focus .cursor {
+  display: block;
+}

@@ -1,0 +1,12 @@
+.react-rte {
+		
+	@import "line";
+	@import "cursor";
+
+	&:focus {
+		.cursor {
+			display:block;
+		}
+	}
+
+}
