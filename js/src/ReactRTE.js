@@ -1,55 +1,26 @@
 /** @jsx React.DOM */
+
 var React = require('react'),
-	Cursor = require('./Cursor'),
-	Lines = require('./lines/Lines'),
-	State = require('./State');
- 
- var KEYS = {
- 	ENTER: 13,
- 	BACKSPACE: 8, 
- 	SPACE: 32
- }
-
-
-var SPACE = ' ';
+	Flux = require('./Flux'),
+	Fluxxor = require('fluxxor'),
+	FluxMixin = Fluxxor.FluxMixin(React),
+    StoreWatchMixin = Fluxxor.StoreWatchMixin;
 
 var ReactRTE = React.createClass({
+	mixins: [FluxMixin, StoreWatchMixin('LineStore')],
 
-	getInitialState: function() {
+	getStateFromFlux: function() {
 		return {
-			cursorPosition: {
-				left: 0,
-				top: 0
-			},
-			activeLine: 0,
-			selection: [],
-			lines: [
-				[{
-					text: ''
-				}]
-			]
-		}
+			lines: this.getFlux().store('LineStore').getState()
+		};
 	},
 	handleKeyDown: function(e) {
-		//This should dispatch an event instead but same concept
-		// State.handleKeyDown(e);
+
 	},
 	handleKeyPress: function(e) {
-		if (this.refs.lines.getDOMNode().children[this.state.activeLine].children[0].offsetWidth >= this.getRTEWidth()) {
-			this.state.lines.push([
-			{
-				text: ''
-			}]);
-			this.state.activeLine += 1;
-			State.setTextFocus(this.state.lines[this.state.activeLine][0]);
-
+		if (e.key == String.fromCharCode(e.which)) {
+			this.getFlux().actions.type.typeLetter(e.key)
 		}
-
-		State.handleKeyPress(e);
-		//CHECK WIDTH OF ACTIVE LINE(S)?
-		//Add new line and set the focus 
-
-		this.setState({lines: this.state.lines, activeLine: this.state.activeLine});
 	},
 	handleKeyUp: function(e) {
 		e.preventDefault();
@@ -67,7 +38,7 @@ var ReactRTE = React.createClass({
 
 	},
 	componentDidMount: function() {
-		State.setTextFocus(this.state.lines[0][0]);
+
 	},
 	componentWillMount: function() {
 		
@@ -78,8 +49,7 @@ var ReactRTE = React.createClass({
 	render: function() {
 		return (
 			<div ref="rteBody" className="react-rte" tabIndex="0" style={{minHeight: 20}} onMouseDown={this.handleMouseDown} onKeyDown={this.handleKeyDown} onKeyPress={this.handleKeyPress} onKeyUp={this.handleKeyUp} onCut={this.handleCut} onPaste={this.handlePaste} onCopy={this.handleCopy}>
-				<Cursor position={this.state.cursorPosition} />
-				<Lines lines={this.state.lines} ref="lines" />
+				{this.state.lines[0].text}
 			</div>
 		);
 
@@ -87,7 +57,7 @@ var ReactRTE = React.createClass({
 });
 
 function reactRender(data, el) {
-	React.renderComponent(<ReactRTE />, el);
+	React.renderComponent(<ReactRTE flux={Flux()} />, el);
 }
 
 if (typeof global.window.define == 'function' && global.window.define.amd) {
